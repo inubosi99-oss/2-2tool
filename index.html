@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>２年２組必勝　百人一首暗記ソフト</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111a2e; --txt:#e8eeff; --muted:#a9b4d6;
+      --accent:#7aa2ff; --good:#28c76f; --bad:#ff4d4f; --warn:#ffcc66;
+      --gold:#ffd166; --silver:#cdd7ff; --bronze:#ffb3c1;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--txt);
+    }
+    header{
+      padding:14px 14px 8px;
+      position:sticky; top:0;
+      background:linear-gradient(180deg, rgba(11,18,32,.98), rgba(11,18,32,.85));
+      backdrop-filter: blur(8px);
+      z-index:10;
+    }
+    h1{margin:0; font-size:18px; letter-spacing:.02em;}
+    .sub{margin-top:6px; font-size:12px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap;}
+    .pill{padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);}
+    main{padding:12px 14px 18px; max-width:980px; margin:0 auto;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:14px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn.primary{background:rgba(122,162,255,.18); border-color:rgba(122,162,255,.45);}
+    .btn.small{padding:8px 10px; font-size:13px; border-radius:10px;}
+    .btn.danger{background:rgba(255,77,79,.10); border-color:rgba(255,77,79,.35);}
+    .select{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:14px;
+      margin-top:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.25);
+    }
+    .label{font-size:12px; color:var(--muted); margin-bottom:6px;}
+    .kami{font-size:24px; line-height:1.6; letter-spacing:.03em;}
+    .choices{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (min-width:760px){
+      .choices{grid-template-columns: 1fr 1fr;}
+    }
+    .choiceBtn{
+      text-align:left;
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--txt);
+      font-size:18px;
+      line-height:1.5;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .choiceBtn:active{transform:scale(.99)}
+    .choiceBtn[disabled]{opacity:.55; cursor:not-allowed;}
+    .choiceBtn.correct{border-color:rgba(40,199,111,.65); background:rgba(40,199,111,.14);}
+    .choiceBtn.wrong{border-color:rgba(255,77,79,.65); background:rgba(255,77,79,.14);}
+    .resultTitle{
+      font-size:16px;
+      margin:0 0 8px 0;
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    }
+    .tag{
+      font-size:12px; padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06);
+      color:var(--muted);
+    }
+    .bigAnswer{
+      font-size:22px;
+      line-height:1.55;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.20);
+      background:rgba(0,0,0,.12);
+      margin:8px 0 10px;
+    }
+    .kv{display:grid; grid-template-columns: 120px 1fr; gap:8px 10px; align-items:start;}
+    .k{color:var(--muted); font-size:12px;}
+    .v{font-size:14px; line-height:1.6;}
+    .warn{color:var(--warn);}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;}
+    .stats{display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px;}
+    @media (min-width:760px){ .stats{grid-template-columns: repeat(4, minmax(0,1fr));} }
+    .stat{padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04);}
+    .stat .n{font-size:18px; margin-top:4px;}
+    .footerNote{color:var(--muted); font-size:12px; margin-top:10px; line-height:1.6;}
+    .kbd{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      font-size:12px; padding:1px 6px; border:1px solid rgba(255,255,255,.16);
+      border-radius:8px; background:rgba(0,0,0,.18);
+    }
+    table{width:100%; border-collapse:collapse; margin-top:8px; font-size:13px;}
+    th, td{border-bottom:1px solid rgba(255,255,255,.10); padding:8px 6px; text-align:left; vertical-align:top;}
+    th{color:var(--muted); font-weight:600;}
+    .right{text-align:right;}
+
+    /* ===== 表彰オーバーレイ（ドーン！） ===== */
+    .overlay{
+      position:fixed; inset:0;
+      display:none;
+      background:rgba(3,6,14,.92);
+      z-index:1000;
+      padding:16px;
+    }
+    .overlay.show{display:block;}
+    .award{
+      max-width:860px;
+      margin:0 auto;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(800px 300px at 50% -20%, rgba(122,162,255,.30), transparent 60%),
+        radial-gradient(600px 260px at 10% 0%, rgba(255,209,102,.20), transparent 60%),
+        radial-gradient(600px 260px at 90% 0%, rgba(205,215,255,.16), transparent 60%),
+        rgba(17,26,46,.90);
+      box-shadow:0 20px 80px rgba(0,0,0,.55);
+      padding:18px 16px 16px;
+      position:relative;
+      overflow:hidden;
+    }
+    .awardTop{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .awardTitle{
+      font-size:20px; letter-spacing:.03em; margin:0;
+    }
+    .awardScore{
+      font-size:40px;
+      line-height:1.1;
+      font-weight:800;
+      letter-spacing:.02em;
+      margin:10px 0 10px;
+    }
+    .awardMsg{
+      font-size:18px;
+      line-height:1.6;
+      margin:8px 0 10px;
+    }
+    .awardMeta{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color:var(--muted); font-size:12px;
+    }
+
+    /* バッジ（Lv10/9/8派手） */
+    .badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06);
+      font-weight:800;
+      letter-spacing:.03em;
+    }
+    .badge .star{font-size:18px;}
+    .badge.lv10{
+      border-color:rgba(255,209,102,.55);
+      background:linear-gradient(90deg, rgba(255,209,102,.30), rgba(122,162,255,.20));
+      box-shadow:0 0 0 1px rgba(255,209,102,.15), 0 0 40px rgba(255,209,102,.18);
+      animation:pulse 1.2s ease-in-out infinite;
+    }
+    .badge.lv9{
+      border-color:rgba(205,215,255,.55);
+      background:linear-gradient(90deg, rgba(205,215,255,.26), rgba(122,162,255,.18));
+      box-shadow:0 0 0 1px rgba(205,215,255,.14), 0 0 34px rgba(205,215,255,.16);
+      animation:pulse 1.35s ease-in-out infinite;
+    }
+    .badge.lv8{
+      border-color:rgba(255,179,193,.55);
+      background:linear-gradient(90deg, rgba(255,179,193,.22), rgba(122,162,255,.16));
+      box-shadow:0 0 0 1px rgba(255,179,193,.12), 0 0 28px rgba(255,179,193,.14);
+      animation:pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{transform:translateY(0); filter:brightness(1);}
+      50%{transform:translateY(-2px); filter:brightness(1.08);}
+    }
+
+    /* キラキラ背景 */
+    .spark{
+      position:absolute;
+      inset:-40px;
+      background:
+        radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(2px 2px at 22% 35%, rgba(255,209,102,.55), transparent 60%),
+        radial-gradient(2px 2px at 35% 18%, rgba(205,215,255,.55), transparent 60%),
+        radial-gradient(2px 2px at 55% 30%, rgba(255,179,193,.50), transparent 60%),
+        radial-gradient(2px 2px at 75% 22%, rgba(255,255,255,.45), transparent 60%),
+        radial-gradient(2px 2px at 88% 40%, rgba(122,162,255,.45), transparent 60%),
+        radial-gradient(2px 2px at 15% 70%, rgba(255,255,255,.40), transparent 60%),
+        radial-gradient(2px 2px at 45% 80%, rgba(255,209,102,.40), transparent 60%),
+        radial-gradient(2px 2px at 80% 76%, rgba(205,215,255,.40), transparent 60%);
+      opacity:.35;
+      animation:drift 6s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes drift{
+      0%{transform:translateY(0);}
+      100%{transform:translateY(28px);}
+    }
+
+    .awardGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (min-width:760px){
+      .awardGrid{grid-template-columns:1fr 1fr;}
+    }
+    .awardBox{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.12);
+      border-radius:18px;
+      padding:12px;
+    }
+    .awardBox .t{color:var(--muted); font-size:12px;}
+    .awardBox .v{font-size:16px; margin-top:6px; line-height:1.6;}
+  </style>
+</head>
+<body>
+<header>
+  <h1>２年２組必勝　百人一首暗記ソフト</h1>
+  <div class="sub">
+    <span class="pill" id="modePill">モード：通常</span>
+    <span class="pill" id="indexPill">—</span>
+    <span class="pill" id="scorePill">正解率：—</span>
+    <span class="pill" id="streakPill">連続：—</span>
+    <span class="pill" id="setPill">セット：—</span>
+    <span class="pill" id="bestPill">ベスト：—</span>
+  </div>
+</header>
+
+<main>
+  <div class="row">
+    <button class="btn primary" id="btnNext">次へ（ランダム）</button>
+    <button class="btn" id="btnStartSet">20問チャレンジ開始</button>
+
+    <select class="select" id="modeSel">
+      <option value="normal">通常（全部からランダム）</option>
+      <option value="weak">苦手復習（❌多めを優先）</option>
+      <option value="unseen">未挑戦（まだ解いてない歌）</option>
+    </select>
+
+    <button class="btn small" id="btnReset">記録リセット</button>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="label">上の句（これを聞いたら下の句！）</div>
+    <div class="kami" id="kami">—</div>
+
+    <div class="choices" id="choices"></div>
+
+    <div class="footerNote">
+      <span class="kbd">20問チャレンジ</span>中は「セット」が進む。20問目で<span class="kbd">表彰</span>がドーン！<br/>
+      判定後に<span class="kbd">決まり字</span>と<span class="kbd">語呂</span>が出る。
+    </div>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none;">
+    <h2 class="resultTitle" id="resultTitle">—</h2>
+    <div class="bigAnswer" id="correctAnswer">—</div>
+
+    <div class="kv">
+      <div class="k">セット結果</div><div class="v" id="setResultLine">—</div>
+      <div class="k">決まり字</div><div class="v" id="kimariji">—</div>
+      <div class="k">語呂合わせ</div><div class="v" id="goro">—</div>
+      <div class="k">全文</div><div class="v" id="fullwaka">—</div>
+      <div class="k">番号</div><div class="v mono" id="no">—</div>
+    </div>
+
+    <div class="row" style="margin-top:12px;">
+      <button class="btn primary" id="btnNext2">次へ</button>
+      <button class="btn" id="btnShowAgain">同じ歌でもう一回</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">学習状況</div>
+    <div class="stats">
+      <div class="stat"><div class="label">解答済み</div><div class="n" id="stDone">—</div></div>
+      <div class="stat"><div class="label">正解 ✅</div><div class="n" id="stGood">—</div></div>
+      <div class="stat"><div class="label">不正解 ❌</div><div class="n" id="stBad">—</div></div>
+      <div class="stat"><div class="label">正解率</div><div class="n" id="stRate">—</div></div>
+    </div>
+    <div class="footerNote">※学習記録・履歴は端末内（オフライン）に保存される。</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <div class="label" style="margin:0;">20問チャレンジ履歴（最新が上）</div>
+      <button class="btn small danger" id="btnClearHistory">履歴を消す</button>
+    </div>
+    <div id="historyWrap" class="footerNote" style="margin-top:6px;">—</div>
+  </div>
+</main>
+
+<!-- ===== 表彰オーバーレイ ===== -->
+<div class="overlay" id="awardOverlay" aria-hidden="true">
+  <div class="award" role="dialog" aria-modal="true">
+    <div class="spark" aria-hidden="true"></div>
+
+    <div class="awardTop">
+      <div>
+        <div class="badge" id="awardBadge"><span class="star">★</span><span id="awardBadgeText">Lv.— 称号</span></div>
+      </div>
+      <button class="btn primary" id="btnCloseAward">続ける（次へ）</button>
+    </div>
+
+    <h2 class="awardTitle">20問チャレンジ 結果発表</h2>
+    <div class="awardScore" id="awardScore">—</div>
+    <div class="awardMsg" id="awardMsg">—</div>
+
+    <div class="awardMeta">
+      <span class="pill" id="awardWhen">—</span>
+      <span class="pill" id="awardBestNow">—</span>
+    </div>
+
+    <div class="awardGrid">
+      <div class="awardBox">
+        <div class="t">あなたの結果</div>
+        <div class="v" id="awardLine">—</div>
+      </div>
+      <div class="awardBox">
+        <div class="t">ベスト記録</div>
+        <div class="v" id="awardBestDetail">—</div>
+      </div>
+    </div>
+
+    <div class="footerNote" style="margin-top:10px;">
+      ※Lv10/9/8は「称号バッジ」が派手演出。クラスで勝負すると盛れる。<br/>
+      ヒント：ベスト更新を目指すなら「苦手復習」→「20問チャレンジ」の流れが強い。
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   データ（100首） ※ここは前と同じ
+   ========================= */
+const RAW_TSV = `番号\t和歌\t決まり字（短縮）\t語呂合わせ
+1\t秋の田の かりほの庵の 苫をあらみ わが衣手は 露にぬれつつ\tあきの わがころもでは\t秋のわが衣では
+2\t春過ぎて 夏来にけらし 白妙の 衣ほすてふ 天の香具山\tはるすぎ ころもほす\t春過ぎ、衣干す
+3\tあしびきの 山鳥の尾の しだり尾の 長々し夜を 独りかも寝む\tあし ながなが\t足ながなが
+4\t田子の浦に うち出でてみれば 白妙の 富士の高嶺に 雪は降りつつ\tたごの ふじ\t田子の富士
+5\t奥山に 紅葉踏み分け 鳴く鹿の 声聞く時ぞ 秋は悲しき\tおく こえ\t置く声
+6\tかささぎの 渡せる橋に おく霜の 白きを見れば 夜ぞ更けにける\tかさは しろ\t傘は白
+7\t天の原 ふりさけ見れば 春日なる 三笠の山に 出でし月かも\tあまの みか？\t天の実か？
+8\t我が庵は 都の辰巳 しかぞ住む 世をうぢ山と 人はいふなり\tわがい よをうし\tわが意、世を憂し
+9\t花の色は 移りにけりな いたづらに 我が身世にふる ながめせし間に\tはなの わがみよ\t花の我が身よ
+10\tこれやこの 行くも帰るも 別れては 知るも知らぬも 逢坂の関\tこれ しる\tこれ知る
+11\tわたの原 八十島かけて 漕ぎ出でぬと 人には告げよ 海人の釣り舟\tわたのはらや ひとにはつげよ\tわたの原や、人には告げよ
+12\t天つ風 雲の通ひ路 吹き閉ぢよ をとめの姿 しばしとどめむ\tあまつ おとめ\t天津乙女
+13\t筑波嶺の 峰より落つる 男女川 恋ぞつもりて 淵となりぬる\tつく こいぞ\t突く鯉ぞ
+14\t陸奥の しのぶもぢずり 誰ゆゑに 乱れそめにし 我ならなくに\tみち みだれそう\t道、乱れそう
+15\t君がため 春の野に出でて 若菜摘む 我が衣手に 雪は降りつつ\tきみがためは わがころもでに\t君がためは、我が衣手に
+16\t立ちわかれ いなばの山の 峰に生ふる まつとし聞かば 今帰り来む\tたち まつと\t立ち待つと
+17\tちはやぶる 神代も聞かず 龍田川 唐紅に 水くくるとは\tちはや から\t千早から
+18\t住の江の 岸に寄る波 よるさへや 夢の通ひ路 人目よくらむ\tすみの ゆめ\t炭の夢
+19\t難波潟 短き芦の 節の間も 逢はでこの世を 過ぐしてよとや\tなにわが あわで\t難波が泡で
+20\tわびぬれば 今はた同じ 難波なる みをつくしても 逢はむとぞ思ふ\tわびる みをつくしても\t詫びる、身を尽くしても
+21\t今来むと いひしばかりに 長月の 有り明けの月を 待ち出でつるかな\tいまこ あり\t今子蟻
+22\t吹くからに 秋の草木の しをるれば むべ山風を 嵐といふらむ\tふ むべ\t踏むべ
+23\t月見れば ちぢに物こそ 悲しけれ 我が身一つの 秋にはあらねど\tつき わがみひとつ\t月、わが身一つ
+24\tこのたびは 幣もとりあへず 手向山 紅葉の錦 神のまにまに\tこの もみじ\tこの紅葉
+25\t名にし負はば 逢坂山の さねかづら 人に知られで くるよしもがな\tなにし ひとにし\t何し、人にし
+26\t小倉山 峰のもみぢ葉 心あらば 今一度の 行幸待たなむ\tおぐらやま いまひとたびのみゆき\t小倉山今一度の深雪
+27\tみかの原 わきて流るる いづみ川 いつ見きとてか 恋しかるらむ\tみかのはら いつみきき\tみかの原いつ見聞き？
+28\t山里は 冬ぞ寂しさ まさりける 人目も草も かれぬと思へば\tやまざと ひとめ\t山里、ひと目
+29\t心あてに 折らばや折らむ 初霜の 置きまどはせる 白菊の花\tこころ あお\tこころ青
+30\t有り明けの つれなく見えし 別れより 暁ばかり 憂きものはなし\tありゃ あか\tありゃ、赤
+31\t朝ぼらけ 有り明けの月と 見るまでに 吉野の里に 降れる白雪\tあさぼらけありあけの よしの\t朝ぼらけ有明の吉野
+32\t山川に 風のかけたる 柵は 流れもあへぬ 紅葉なりけり\tやまが ながれる\t山が流れる
+33\t久方の 光のどけき 春の日に しづ心なく 花の散るらむ\tひさかたの しづ\t久方の静
+34\t誰をかも 知る人にせむ 高砂の 松も昔の 友ならなくに\tたれまつも むかし\t誰待つも昔
+35\t人はいさ 心も知らず ふるさとは 花ぞ昔の 香ににほひける\tひとは はなぞ\t人は花ぞ
+36\t夏の夜は まだ宵ながら 明けぬるを 雲のいづこに 月宿るらむ\tなつ くもの\t懐くもの
+37\t白露に 風の吹きしく 秋の野は 貫き止めぬ 玉ぞ散りける\tしら つら\tしらつら
+38\t忘らるる 身をば思はず 誓ひてし 人の命の 惜しくもあるかな\tわすらるる ひとのいのち\t忘らるる人の命
+39\t浅茅生の 小野の篠原 忍れど あまりてなどか 人の恋しき\tあさ じゅうあまり\t朝、十あまり
+40\t忍れど 色に出でにけり 我が恋は 物や思ふと 人の問ふまで\tしの もの\tしのもの
+41\t恋すてふ 我が名はまだき 立ちにけり 人知れずこそ 思ひ初めしか\tこい ひとしれず\t来い、人知れず
+42\t契りきな かたみに袖を しぼりつつ 末の松山 波越さじとは\tちぎりきな すえのまつやま\tちぎりきな末の松山
+43\t逢ひ見ての 後の心に 比ぶれば 昔は物を 思はざりけり\tあい むかし\t愛、昔
+44\t逢ふことの 絶えてしなくは なかなかに 人をも身をも 恨みざらまし\tあうこと ひとを\t会うこと、人を
+45\tあはれとも いふべき人は 思ほえで 身のいたづらに なりぬべきかな\tあわれ みの\t哀れみの
+46\t由良の門を 渡る舟人 かぢを絶え ゆくへも知らぬ 恋の道かな\tゆら ゆく\tゆらゆく
+47\t八重葎 茂れる宿の さびしきに 人こそ見えね 秋は来にけり\tやえで ひとこそみえねぇ\t八重で人こそ見えねぇ
+48\t風をいたみ 岩打つ波の おのれのみ くだけて物を 思ふ頃かな\tかぜを くだけ\t風をくだけ
+49\tみかき守 衛士のたく火の 夜は燃え 昼は消えつつ 物をこそ思へ\tみがきも ひる\t磨きも昼
+50\t君がため 惜しからざりし 命さへ 長くもがなと 思ひけるかな\tきみがため、お ながく\t君がため、尾長く
+51\tかくとだに えやはいぶきの さしも草 さしも知らじな 燃ゆる思ひを\tかく さ\t書くさ
+52\t明けぬれば 暮るるものとは 知りながら なほ恨めしき 朝ぼらけかな\tあけな ほぉら\t開けな、ほぉら
+53\t嘆きつつ 独り寝る夜の 明くる間は いかに久しき ものとかは知る\tなげき イカ\t嘆きイカ
+54\t忘れじの 行く末までは 難ければ 今日を限りの 命ともがな\tわすれじ きょうを\t忘れじ今日を
+55\t滝の音は 絶えて久しく なりぬれど 名こそ流れて なほ聞こえけれ\tたきの なこそ\t滝の名こそ
+56\tあらざらむ この世の外の 思ひ出に 今一度の 逢ふこともがな\tあらざらん いまひとたびのあう\tあらざらん今一度の会う
+57\tめぐり逢ひて 見しやそれとも わかぬ間に 雲隠れにし 夜半の月かな\tメグ くもがくれ\tメグ、雲隠れ
+58\t有馬山 猪名の笹原 風吹けば いでそよ人を 忘れやはする\tありま いーで\t有馬、いーで
+59\tやすらはで 寝なましものを さ夜更けて 傾くまでの 月を見しかな\tやす かった\t安かった
+60\t大江山 いく野の道の 遠ければ まだふみも見ず 天の橋立\tおおえ まだ？\t大江、まだ？
+61\tいにしえの 奈良の都の 八重桜 今日九重に にほひぬるかな\tいにしえの きょうこ\t古の京子
+62\t夜をこめて 鳥の空音は はかるとも よに逢坂の 関は許さじ\tよを よに\tよをよに
+63\t今はただ 思ひ絶えなむ とばかりを 人づてならで 言ふよしもがな\tいまは ひとつ\t今は一つ
+64\t朝ぼらけ 宇治の川霧 たえだえに あらはれ渡る 瀬々の網代木\tあさぼらけうじ あらわれる\t朝ぼらけ宇治、現れる
+65\t恨みわび ほさぬ袖だに あるものを 恋に朽ちなむ 名こそ惜しけれ\tうらの こいに\t裏の鯉に
+66\tもろともに あはれと思へ 山桜 花より外に 知る人もなし\tもろともに はなよ\tもろともに花よ
+67\t春の夜の 夢ばかりなる 手枕に かひなく立たむ 名こそ惜しけれ\tはるの かい\t春の貝
+68\t心にも あらで憂き世に ながらへば 恋しかるべき 夜半の月かな\tこころに こいし\t心に小石
+69\t嵐吹く 三室の山の もみぢ葉は 龍田の川の 錦なりけり\tあらし たつ\t嵐たつ
+70\tさびしさに 宿を立ち出でて 眺むれば いづこも同じ 秋の夕暮れ\tさぁ いづこ？\tさぁ、いづこ？
+71\t夕されば 門田の稲葉 おとづれて 芦のまろやに 秋風ぞ吹く\tいう あし\t言う足
+72\t音に聞く 高師の浜の あだ波は かけじや袖の 濡れもこそすれ\tおとを かける\t音をかける
+73\t高砂の 尾の上の桜 咲きにけり 外山の霞 たたずもあらなむ\tたか とやま\t鷹と山
+74\tうかりける 人を初瀬の 山おろしよ はげしかれとは 祈らぬものを\tうっかり ハゲ\tうっかりハゲ
+75\t契りおきし させもが露を 命にて あはれ今年の 秋もいぬめり\tちぎりお あわれ\t千切り尾、哀れ
+76\tわたの原 漕ぎ出でて見れば 久方の 雲居にまがふ 沖つ白波\tわたのはら こぐもいる\tわたの原 子蜘蛛いる
+77\t瀬を早み 岩にせかるる 滝川の われても末に あはむとぞ思ふ\tせ われ\t背割れ
+78\t淡路島 通ふ千鳥の 鳴く声に 幾夜寝覚めぬ 須磨の関守\tあわじしま いくよ\t淡路島行くよ
+79\t秋風に たなびく雲の 絶え間より もれ出づる月の 影のさやけさ\tあきかぜ もれいづる\t秋風、もれ出づる
+80\t長からむ 心も知らず 黒髪の 乱れてけさは 物をこそ思へ\tながから みだれて\t長から、乱れて
+81\tほととぎす 鳴きつる方を 眺むれば ただ有り明けの 月ぞ残れる\tほととぎすは ただ\tほととぎすはタダ
+82\t思ひわび さても命は あるものを 憂きにたへぬは 涙なりけり\tおもい うきわ\t重い浮き輪
+83\t世の中よ 道こそなけれ 思ひ入る 山の奥にも 鹿ぞ鳴くなる\tよのなかよ やまのおく\t世の中よ、山の奥
+84\tながらへば またこの頃や 忍ばれむ 憂しと見し世ぞ 今は恋しき\tながら うし\tながら牛
+85\t夜もすがら 物思ふ頃は 明けやらで 閏のひまさへ つれなかりけり\tようも ねぇや\t用もねぇや
+86\t嘆けとて 月やは物を 思はする かこち顔なる わが涙かな\tなげけ かこ\t嘆け過去
+87\t村雨の 露もまだ干ぬ 槇の葉に 霧立ちのぼる 秋の夕暮れ\tむ き～\tムキ～
+88\t難波江の 芦のかりねの ひとよゆゑ みをつくしてや 恋ひわたるべき\tなにわえの みおつくしやぁ\t難波江の澪標やぁ
+89\t玉の緒よ 絶えなば絶えね ながらへば 忍ぶることの 弱りもぞする\tたま しのぶ\t玉忍ぶ
+90\t見せばやな 雄島の海人の 袖だにも 濡れにぞ濡れし 色は変はらず\tみせ ぬ\t見せぬ
+91\tきりぎりす 鳴くや霜夜の さむしろに 衣かたしき ひとりかも寝む\tきりぎりすの ころもはかたい\tきりぎりすの衣は固い
+92\tわが袖は 潮干に見えぬ 沖の石の 人こそ知らね 乾く間もなし\tわがそでは ひとこそしらね\t我が袖は人こそ知らね
+93\t世の中は 常にもがもな 渚漕ぐ 海人の小舟の 綱手かなしも\tよのなかは あまのお\t世の中は海女の尾
+94\tみ吉野の 山の秋風 さ夜更けて ふるさと寒く 衣打つなり\tみよ ふるさと\t見よ、ふるさと
+95\tおほけなく うき世の民に 覆ふかな 我が立つ杣に 墨染の袖\tオーケー わかった\tOKわかった
+96\t花さそふ 嵐の庭の 雪ならで ふりゆくものは 我が身なりけり\tはな さそうふり\t花誘うふり
+97\t来ぬ人を 松帆の浦の 夕凪に 焼くや藻塩の 身もこがれつつ\tこぬひとを やく\t来ぬ人を焼く
+98\t風そよぐ ならの小川の 夕暮れは みそぎぞ夏の しるしなりける\tかぜそよぐ みそ\t風そよぐ味噌
+99\t人も惜し 人も恨めし あぢきなく 世を思ふ故に もの思ふ身は\tひとも よおぉ～\t人もよおぉ～
+100\tももしきや 古き軒端の しのぶにも なほあまりある 昔なりけり\tもも なおあまり\t桃、なお余り`;
+
+/* =========================
+   ユーティリティ
+   ========================= */
+function normalizeSpaces(s){ return (s||"").replace(/\s+/g," ").trim(); }
+function nowString(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function splitKamiShimo(waka){
+  const parts=normalizeSpaces(waka).split(" ");
+  if(parts.length>=5){
+    const kami=parts.slice(0,3).join(" ");
+    const shimo=parts.slice(3,5).join(" ");
+    const rest=parts.slice(5).join(" ");
+    return {kami, shimo: normalizeSpaces([shimo,rest].filter(Boolean).join(" "))};
+  }
+  const mid=Math.max(1, Math.floor(parts.length*0.6));
+  return {kami:parts.slice(0,mid).join(" "), shimo:parts.slice(mid).join(" ")};
+}
+function parseTSV(raw){
+  const lines=raw.split(/\r?\n/).filter(l=>l.trim().length);
+  const out=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split("\t");
+    if(cols.length<4) continue;
+    const id=parseInt(cols[0],10);
+    const waka=normalizeSpaces(cols[1]);
+    const kimariji=normalizeSpaces(cols[2]);
+    const goro=normalizeSpaces(cols[3]);
+    const {kami,shimo}=splitKamiShimo(waka);
+    out.push({id,waka,kami,shimo,kimariji,goro});
+  }
+  out.sort((a,b)=>a.id-b.id);
+  return out;
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* =========================
+   データ
+   ========================= */
+const POEMS=parseTSV(RAW_TSV);
+function getPoemById(id){ return POEMS.find(p=>p.id===id); }
+
+/* =========================
+   永続化
+   ========================= */
+const STORAGE_KEY="hyakunin_22_kumikatsu_v3";
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return {stats:{}, streak:0, lastId:null, history:[], best:{score:-1, level:0, at:null, msg:""}};
+    const obj=JSON.parse(raw);
+    if(!obj.stats) obj.stats={};
+    if(typeof obj.streak!=="number") obj.streak=0;
+    if(!Array.isArray(obj.history)) obj.history=[];
+    if(!obj.best) obj.best={score:-1, level:0, at:null, msg:""};
+    return obj;
+  }catch(e){
+    return {stats:{}, streak:0, lastId:null, history:[], best:{score:-1, level:0, at:null, msg:""}};
+  }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+const state=loadState();
+function ensureStat(id){
+  if(!state.stats[id]) state.stats[id]={good:0,bad:0};
+  return state.stats[id];
+}
+function computeOverall(){
+  const ids=POEMS.map(p=>p.id);
+  let done=0, good=0, bad=0;
+  for(const id of ids){
+    const st=state.stats[id];
+    if(st && (st.good+st.bad)>0){
+      done++; good+=st.good; bad+=st.bad;
+    }
+  }
+  const totalAns=good+bad;
+  const rate=totalAns?Math.round((good/totalAns)*100):null;
+  return {done,good,bad,rate,total:ids.length,streak:state.streak||0};
+}
+
+/* =========================
+   出題プール
+   ========================= */
+function pickFromPool(mode){
+  const ids=POEMS.map(p=>p.id);
+  if(mode==="unseen"){
+    const unseen=ids.filter(id=>{
+      const st=state.stats[id];
+      return !(st && (st.good+st.bad)>0);
+    });
+    return unseen.length?unseen:ids;
+  }
+  if(mode==="weak"){
+    const weighted=ids.map(id=>{
+      const st=state.stats[id]||{good:0,bad:0};
+      const total=st.good+st.bad;
+      const badRate=total?(st.bad/total):0.6;
+      const score=(st.bad*2)+(badRate*5)+(total===0?1.5:0);
+      return {id,w:Math.max(0.1,score)};
+    });
+    const sum=weighted.reduce((a,c)=>a+c.w,0);
+    let r=Math.random()*sum;
+    for(const it of weighted){
+      r-=it.w;
+      if(r<=0) return [it.id];
+    }
+    return ids;
+  }
+  return ids;
+}
+function pickNextId(){
+  const mode=document.getElementById("modeSel").value;
+  const pool=pickFromPool(mode);
+  const candidates=pool.filter(id=>id!==state.lastId);
+  const list=candidates.length?candidates:pool;
+  const id=list[Math.floor(Math.random()*list.length)];
+  state.lastId=id;
+  saveState();
+  return id;
+}
+
+/* =========================
+   4択
+   ========================= */
+function makeChoices(correctPoem){
+  const correct=correctPoem.shimo;
+  const others=POEMS.filter(p=>p.id!==correctPoem.id).map(p=>p.shimo);
+  const uniq=Array.from(new Set(others));
+  shuffle(uniq);
+  return shuffle([correct, ...uniq.slice(0,3)]);
+}
+
+/* =========================
+   20問チャレンジ（段位＆派手表彰）
+   ========================= */
+const SET_SIZE=20;
+let setMode=false;
+let setIndex=0;
+let setCorrect=0;
+
+function levelFromScore(score){
+  if(score>=20) return 10;
+  if(score>=18) return 9;
+  if(score>=16) return 8;
+  if(score>=14) return 7;
+  if(score>=12) return 6;
+  if(score>=10) return 5;
+  if(score>=8)  return 4;
+  if(score>=6)  return 3;
+  if(score>=4)  return 2;
+  return 1;
+}
+function levelMessage(level){
+  const map={
+    10:"あなたは阿倍仲麻呂です！２組の誇りです！",
+    9:"あなたは山田先生と同じレベルです！すごい！",
+    8:"あなたは現代の紫式部です！",
+    7:"あなたは現代の清少納言です！",
+    6:"あなたは仲前門先生と同じレベルです！",
+    5:"あなたは一般人です！普通です！",
+    4:"林先生と同レベルの実力です！",
+    3:"できないは伸びしろです！がんばれ！",
+    2:"いやいや、それはちょっと・・・２組ならできる！",
+    1:"大丈夫・・・まだ時間はある・・・覚えよう"
+  };
+  return map[level]||"";
+}
+function updateSetPill(){
+  document.getElementById("setPill").textContent =
+    setMode ? `セット：${setIndex}/${SET_SIZE}（正解${setCorrect}）` : "セット：—";
+}
+function computeBestFromHistory(){
+  // bestを確実にしたい（古いデータから復元）
+  const h=state.history||[];
+  let bestScore = (state.best?.score ?? -1);
+  let best = state.best || {score:-1, level:0, at:null, msg:""};
+  for(const r of h){
+    if(r.correct > bestScore){
+      bestScore = r.correct;
+      best = {score:r.correct, level:r.level, at:r.at, msg:r.message};
+    }
+  }
+  state.best = best;
+  saveState();
+}
+function updateBestPill(){
+  computeBestFromHistory();
+  if(state.best && state.best.score>=0){
+    document.getElementById("bestPill").textContent = `ベスト：${state.best.score}/20（Lv.${state.best.level}）`;
+  }else{
+    document.getElementById("bestPill").textContent = "ベスト：—";
+  }
+}
+function startSet(){
+  setMode=true;
+  setIndex=0;
+  setCorrect=0;
+  updateSetPill();
+  nextQuestion();
+}
+
+/* ===== 表彰オーバーレイ表示 ===== */
+function showAward(record, isNewBest){
+  const overlay=document.getElementById("awardOverlay");
+  const badge=document.getElementById("awardBadge");
+  const badgeText=document.getElementById("awardBadgeText");
+
+  // バッジ演出（Lv10/9/8だけ派手）
+  badge.className = "badge"; // reset
+  if(record.level===10){ badge.classList.add("lv10"); badgeText.textContent=`Lv.10 伝説級`; }
+  else if(record.level===9){ badge.classList.add("lv9"); badgeText.textContent=`Lv.9 超一流`; }
+  else if(record.level===8){ badge.classList.add("lv8"); badgeText.textContent=`Lv.8 一流`; }
+  else { badgeText.textContent=`Lv.${record.level} 称号`; }
+
+  document.getElementById("awardScore").textContent = `${record.correct} / ${record.total}`;
+  document.getElementById("awardMsg").textContent = record.message;
+  document.getElementById("awardWhen").textContent = `日時：${record.at}`;
+  document.getElementById("awardLine").textContent = `20問中 ${record.correct}問正解 → Lv.${record.level}：${record.message}`;
+
+  // ベスト表示
+  updateBestPill();
+  const best = state.best && state.best.score>=0 ? state.best : record;
+  const bestLine = `ベスト：${best.score}/20（Lv.${best.level}）${best.at ? "  @"+best.at : ""}`;
+  document.getElementById("awardBestDetail").textContent = bestLine;
+  document.getElementById("awardBestNow").textContent = isNewBest ? "🎉 ベスト更新！" : "ベスト更新ならず";
+
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden","false");
+}
+function hideAward(){
+  const overlay=document.getElementById("awardOverlay");
+  overlay.classList.remove("show");
+  overlay.setAttribute("aria-hidden","true");
+}
+
+/* =========================
+   履歴
+   ========================= */
+function renderHistory(){
+  const wrap=document.getElementById("historyWrap");
+  const h=state.history||[];
+  if(!h.length){
+    wrap.textContent="まだ履歴がありません（20問チャレンジをすると記録されます）。";
+    return;
+  }
+  const rows=h.map((r,idx)=>{
+    const line=`${r.total}問中 ${r.correct}問 → Lv.${r.level}：${r.message}`;
+    return `<tr>
+      <td class="mono">${escapeHtml(r.at)}</td>
+      <td>${escapeHtml(line)}</td>
+      <td class="right">${idx===0?'<span class="tag">最新</span>':''}</td>
+    </tr>`;
+  }).join("");
+  wrap.innerHTML=`
+    <table>
+      <thead><tr>
+        <th style="width:170px;">日時</th><th>結果</th><th class="right" style="width:70px;"> </th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footerNote">※履歴はこの端末だけに保存（最大100件）。</div>
+  `;
+}
+function clearHistory(){
+  if(!confirm("20問チャレンジの履歴を消します。よろしいですか？")) return;
+  state.history=[];
+  state.best={score:-1, level:0, at:null, msg:""};
+  saveState();
+  renderHistory();
+  updateBestPill();
+}
+
+/* =========================
+   UI制御
+   ========================= */
+let currentPoem=null;
+let locked=false;
+
+function updateHeader(){
+  const mode=document.getElementById("modeSel").value;
+  const map={normal:"通常", weak:"苦手復習", unseen:"未挑戦"};
+  document.getElementById("modePill").textContent=`モード：${map[mode]||"通常"}`;
+
+  const s=computeOverall();
+  document.getElementById("scorePill").textContent = (s.rate===null) ? "正解率：—" : `正解率：${s.rate}%`;
+  document.getElementById("streakPill").textContent = `連続：${s.streak}`;
+}
+function showQuiz(){
+  document.getElementById("quizCard").style.display="";
+  document.getElementById("resultCard").style.display="none";
+}
+function showResult(){
+  document.getElementById("quizCard").style.display="none";
+  document.getElementById("resultCard").style.display="";
+}
+function renderQuiz(poem){
+  currentPoem=poem;
+  locked=false;
+
+  document.getElementById("kami").textContent=poem.kami;
+  document.getElementById("indexPill").textContent=`出題：No.${poem.id}`;
+
+  const wrap=document.getElementById("choices");
+  wrap.innerHTML="";
+  const choices=makeChoices(poem);
+  choices.forEach(choiceText=>{
+    const btn=document.createElement("button");
+    btn.className="choiceBtn";
+    btn.textContent=choiceText;
+    btn.addEventListener("click", ()=>onAnswer(choiceText, btn));
+    wrap.appendChild(btn);
+  });
+
+  showQuiz();
+  updateHeader();
+  updateSetPill();
+  updateBestPill();
+}
+function renderResult({isCorrect, pickedText, setLineText}){
+  const title=document.getElementById("resultTitle");
+  if(isCorrect){
+    title.textContent="✅ 正解！";
+    title.insertAdjacentHTML("beforeend", ` <span class="tag">選択：OK</span>`);
+  }else{
+    title.textContent="❌ 不正解…";
+    title.insertAdjacentHTML("beforeend", ` <span class="tag warn">選択：${escapeHtml(pickedText)}</span>`);
+  }
+
+  document.getElementById("correctAnswer").textContent=`下の句：${currentPoem.shimo}`;
+  document.getElementById("kimariji").textContent=currentPoem.kimariji||"—";
+  document.getElementById("goro").textContent=currentPoem.goro||"—";
+  document.getElementById("fullwaka").textContent=currentPoem.waka;
+  document.getElementById("no").textContent=`No.${currentPoem.id}`;
+  document.getElementById("setResultLine").textContent=setLineText||"—";
+
+  showResult();
+  updateHeader();
+  updateSetPill();
+  updateBestPill();
+}
+function lockChoices(){ document.querySelectorAll(".choiceBtn").forEach(b=>b.disabled=true); }
+function markButtons(pickedBtn){
+  const btns=Array.from(document.querySelectorAll(".choiceBtn"));
+  btns.forEach(b=>{ if(b.textContent===currentPoem.shimo) b.classList.add("correct"); });
+  if(pickedBtn && pickedBtn.textContent!==currentPoem.shimo) pickedBtn.classList.add("wrong");
+}
+
+function onAnswer(pickedText, pickedBtn){
+  if(locked) return;
+  locked=true;
+  const isCorrect=(pickedText===currentPoem.shimo);
+
+  lockChoices();
+  markButtons(pickedBtn);
+
+  // 学習記録
+  const st=ensureStat(currentPoem.id);
+  if(isCorrect){ st.good+=1; state.streak=(state.streak||0)+1; }
+  else { st.bad+=1; state.streak=0; }
+
+  // セット処理
+  let setLineText="—";
+  let justFinishedRecord=null;
+  let isNewBest=false;
+
+  if(setMode){
+    setIndex += 1;
+    if(isCorrect) setCorrect += 1;
+
+    if(setIndex >= SET_SIZE){
+      const level=levelFromScore(setCorrect);
+      const msg=levelMessage(level);
+      const record={at:nowString(), correct:setCorrect, total:SET_SIZE, level, message:msg};
+
+      // 履歴保存
+      state.history.unshift(record);
+      state.history = state.history.slice(0,100);
+
+      // ベスト更新判定（点数優先、同点ならレベル/日時で維持）
+      computeBestFromHistory();
+      if(record.correct > (state.best?.score ?? -1)){
+        state.best = {score:record.correct, level:record.level, at:record.at, msg:record.message};
+        isNewBest = true;
+      }else{
+        // 既にbestが高い場合はそのまま
+      }
+
+      setLineText = `20問中 ${record.correct}問正解 → ${record.level}レベル：${record.message}`;
+
+      // セット終了
+      setMode=false;
+
+      justFinishedRecord = record;
+    }
+  }
+
+  saveState();
+
+  // 結果表示（最後の20問なら“表彰”をドーン）
+  setTimeout(()=> {
+    renderResult({isCorrect, pickedText, setLineText: (justFinishedRecord? setLineText : "—")});
+
+    if(justFinishedRecord){
+      renderHistory();
+      updateBestPill();
+      // 表彰オーバーレイ
+      showAward(justFinishedRecord, (justFinishedRecord.correct >= (state.best?.score ?? -1)) && isNewBest);
+    }
+  }, isCorrect ? 350 : 450);
+}
+
+/* =========================
+   ボタン
+   ========================= */
+function nextQuestion(){
+  const id=pickNextId();
+  const poem=getPoemById(id);
+  renderQuiz(poem);
+}
+function sameAgain(){
+  if(!currentPoem) return;
+  renderQuiz(currentPoem);
+}
+function resetAll(){
+  if(!confirm("学習記録（正誤・連続など）と履歴を全部リセットします。よろしいですか？")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+/* iOSタップ安定化 */
+document.addEventListener("touchstart", function(){}, {passive:true});
+
+/* events */
+document.getElementById("btnNext").addEventListener("click", nextQuestion);
+document.getElementById("btnNext2").addEventListener("click", nextQuestion);
+document.getElementById("btnShowAgain").addEventListener("click", sameAgain);
+document.getElementById("btnStartSet").addEventListener("click", startSet);
+document.getElementById("modeSel").addEventListener("change", ()=>{ updateHeader(); nextQuestion(); });
+document.getElementById("btnReset").addEventListener("click", resetAll);
+document.getElementById("btnClearHistory").addEventListener("click", clearHistory);
+
+// 表彰
+document.getElementById("btnCloseAward").addEventListener("click", ()=>{
+  hideAward();
+  nextQuestion();
+});
+document.getElementById("awardOverlay").addEventListener("click", (e)=>{
+  // 背景クリックで閉じる（カード内クリックは無視）
+  if(e.target.id==="awardOverlay"){
+    hideAward();
+    nextQuestion();
+  }
+});
+
+/* start */
+if(!POEMS.length){
+  alert("データの読み込みに失敗しました。RAW_TSVを確認してください。");
+}else{
+  renderHistory();
+  updateHeader();
+  updateSetPill();
+  updateBestPill();
+  nextQuestion();
+}
+</script>
+</body>
+</html>
